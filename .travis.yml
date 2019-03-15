@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t dandrewsify/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run dandrewsify/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t dandrewsify/multi-client ./client
+  - docker build -t dandrewsify/multi-nginx ./nginx
+  - docker build -t dandrewsify/multi-server ./server
+  - docker build -t dandrewsify/multi-worker ./worker
+  # LOG IN  TO DOCKER CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push dandrewsify/multi-client
+  - docker push dandrewsify/multi-nginx
+  - docker push dandrewsify/multi-server
+  - docker push dandrewsify/multi-worker
+
